@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32f1xx_hal_flash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,9 +31,14 @@ static void goto_application( void );
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BOOTLOADER_ALLOCATED_SIZE		0x00004000
 #define APPPLICATION_START_ADDR			0x08004000
+#define APPPLICATION_SIZE				0x4000
 #define APPPLICATION_RESET_HANDLE_ADDR	APPPLICATION_START_ADDR + 4
+
+#define BK_APPPLICATION_START_ADDR			0x08002000
+#define BK_APPPLICATION_SIZE				0x1800
+
+#define INFO_DATA_START_ADDR			BK_APPPLICATION_START_ADDR + BK_APPPLICATION_SIZE
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -92,12 +97,58 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_Delay(1000);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
   HAL_Delay(1000);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
   HAL_Delay(1000);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+  HAL_Delay(1000);
+
+  uint32_t counter = (uint32_t)(*((volatile uint32_t*) (INFO_DATA_START_ADDR)));
+
+  HAL_FLASH_Unlock();
+
+  counter++;
+  counter = ((counter % 3) == 0) ? 0 : counter;
+
+  FLASH_EraseInitTypeDef EraseInitStruct;
+  uint32_t PageError;
+
+  EraseInitStruct.TypeErase     = FLASH_TYPEERASE_PAGES;
+  EraseInitStruct.Banks 		= FLASH_BANK_1;
+  EraseInitStruct.PageAddress	= INFO_DATA_START_ADDR;
+  EraseInitStruct.NbPages		= 1;
+  HAL_FLASHEx_Erase( &EraseInitStruct, &PageError );
+
+  HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, INFO_DATA_START_ADDR, counter);
+
+  HAL_FLASH_Lock();
+
+  counter = (uint32_t)(*((volatile uint32_t*) (INFO_DATA_START_ADDR)));
+
+  if (counter == 2)
+  {
+	  HAL_FLASH_Unlock();
+
+	  EraseInitStruct.TypeErase     = FLASH_TYPEERASE_PAGES;
+	  EraseInitStruct.Banks 		= FLASH_BANK_1;
+	  EraseInitStruct.PageAddress	= APPPLICATION_START_ADDR;
+	  EraseInitStruct.NbPages		= APPPLICATION_SIZE / 1024;
+	  HAL_FLASHEx_Erase( &EraseInitStruct, &PageError );
+
+	  for (uint32_t i = 0; i < BK_APPPLICATION_SIZE; i+=4)
+	  {
+		  uint32_t data = (uint32_t)(*((volatile uint32_t*) (BK_APPPLICATION_START_ADDR + i)));
+		  HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, APPPLICATION_START_ADDR + i, data);
+	  }
+
+	  HAL_FLASH_Unlock();
+  }
 
   goto_application();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

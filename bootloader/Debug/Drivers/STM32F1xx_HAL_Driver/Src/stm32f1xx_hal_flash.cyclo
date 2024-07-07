@@ -11,4 +11,4 @@
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c:772:10:HAL_FLASH_GetError	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c:795:13:FLASH_Program_HalfWord	1
 ../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c:824:19:FLASH_WaitForLastOperation	9
-../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c:912:13:FLASH_SetErrorCode	5
+../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c:918:13:FLASH_SetErrorCode	5

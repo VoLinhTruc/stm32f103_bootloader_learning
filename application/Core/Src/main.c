@@ -94,9 +94,9 @@ int main(void)
   for(uint8_t i = 0; i < 5; i++)
   {
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-	  HAL_Delay(100);
+	  HAL_Delay(200);
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-	  HAL_Delay(100);
+	  HAL_Delay(200);
   }
   /* USER CODE END 2 */
 
@@ -117,7 +117,7 @@ int main(void)
 		  break;
 	  }
   }
-  NVIC_SystemReset();
+  HAL_NVIC_SystemReset();
 
   /* USER CODE END 3 */
 }
